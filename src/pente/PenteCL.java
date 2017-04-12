@@ -12,19 +12,19 @@ import org.json.simple.parser.JSONParser;
 
 
 public class PenteCL{
-    private static final String URL = "http://5.196.89.227/app_dev.php";
+    private static final String URL = "http://127.0.0.1:8000/app_dev.php";
 	public static void main(String[] args){
-            //Connexion
             try{
-                System.out.println(URL);
                 boolean bPartieFinie = false;
+                boolean aMoi = false;
+                int code = 0;
+                int numJoueur = 0;
+                
+                //Connexion
                 URL urlConnect = new URL(URL+"/connect/Pastaoili");
                 HttpURLConnection connect = (HttpURLConnection) urlConnect.openConnection();
                 connect.setRequestMethod("GET");
                 connect.setRequestProperty("Accept", "application/json");
-                if (connect.getResponseCode() != 200) {
-                    throw new RuntimeException("Failed : HTTP error code : " + connect.getResponseCode());
-                }
                 InputStream is = connect.getInputStream();
                 BufferedReader bfr = new BufferedReader(new InputStreamReader(is));
                 StringBuilder builder = new StringBuilder(2048);
@@ -33,25 +33,58 @@ public class PenteCL{
                     builder.append(line);
                 }
                 connect.disconnect();
+                //Fin connexion
+                
+                //Recup données json
                 JSONParser parser = new JSONParser();
                 JSONObject json = (JSONObject) parser.parse(builder.toString());
-                String idJoueur	= (String) json.get("idJoueur");
+                String idJoueur = (String) json.get("idJoueur");
                 String nomJoueur = (String) json.get("nomJoueur");
-                int numJoueur = (int) json.get("numJoueur");
-                System.out.println(idJoueur + " ---- " + nomJoueur + " ---- " + numJoueur);
+                System.out.println("id : " + idJoueur);
+                System.out.println("nom : " + nomJoueur);
+                Object c = json.get("code");
+                Object num = json.get("numJoueur");
+                //Fin recup données
+                
+                //test type des variables
+                if(!(c instanceof Integer)){
+                    code = (int) (long) c;
+                    System.out.println("code pas int : " + code);
+                }else{
+                    code = (int) c;
+                    System.out.println("code : " + code);
+                }
+                if(!(num instanceof Integer)){
+                    numJoueur = (int) (long) num;
+                    System.out.println("num pas int : " + numJoueur);
+                }else{
+                    numJoueur = (int) num;
+                    System.out.println("num : " + numJoueur);
+                }
+                //Fin test type
+                
+                //Test code reponse
+                if(code == 401) {
+                    System.out.println("Vous n'êtes pas autorisé à entrer dans la partie");
+                    bPartieFinie = true;
+                }
+                if (code == 503){
+                    System.out.println("Connexion impossible !");
+                    bPartieFinie = true;
+                }
+                //Fin test code reponse
+                
+                //Création joueur IA 
                 AIPlayer joueur = new AIPlayer(numJoueur, idJoueur, nomJoueur, 3);
                 Board board = new Board(19, 2);
-                boolean aMoi = false;
                 while(!bPartieFinie){
+                    System.out.println("dans partie");
                     while(!aMoi){
-                        //Recup du json turn
+                        //Turn
                         URL urlTurn = new URL(URL+"/turn/"+idJoueur);
                         HttpURLConnection turn = (HttpURLConnection) urlTurn.openConnection();
                         turn.setRequestMethod("GET");
                         turn.setRequestProperty("Accept", "application/json");
-                        if (connect.getResponseCode() != 200) {
-                            throw new RuntimeException("Failed : HTTP error code : " + connect.getResponseCode());
-                        }
                         is = turn.getInputStream();
                         bfr = new BufferedReader(new InputStreamReader(is));
                         builder = new StringBuilder(2048);
@@ -59,8 +92,11 @@ public class PenteCL{
                             builder.append(line);
                         }
                         turn.disconnect();
+                        //Fin Turn
+                        
                         parser = new JSONParser();
                         json = (JSONObject) parser.parse(builder.toString());
+                        
                         //Vérifie si à moi de joué
                         aMoi = (boolean) json.get("status");
                         //Recup du plateau de jeu
@@ -74,7 +110,8 @@ public class PenteCL{
                     }
                     //Recup le mouvement de l'IA
                     Move m = joueur.getMove(board);
-                    //Recup du json turn
+                    
+                    //Recup du json play
                     URL urlPlay = new URL(URL+"/play/"+m.col+"/"+m.row+"/"+joueur.nomJoueur);
                     HttpURLConnection play = (HttpURLConnection) urlPlay.openConnection();
                     play.setRequestMethod("GET");
