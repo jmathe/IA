@@ -12,7 +12,7 @@ import org.json.simple.parser.JSONParser;
 
 
 public class PenteCL{
-    private static final String URL = "monUrl";
+    private static final String URL = "http://5.196.89.227/app_dev.php";
 	public static void main(String[] args){
             //Connexion
             try{
