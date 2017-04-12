@@ -16,6 +16,7 @@ public class PenteCL{
 	public static void main(String[] args){
             //Connexion
             try{
+                System.out.println(URL);
                 boolean bPartieFinie = false;
                 URL urlConnect = new URL(URL+"/connect/Pastaoili");
                 HttpURLConnection connect = (HttpURLConnection) urlConnect.openConnection();
@@ -37,6 +38,9 @@ public class PenteCL{
                 String idJoueur	= (String) json.get("idJoueur");
                 String nomJoueur = (String) json.get("nomJoueur");
                 int numJoueur = (int) json.get("numJoueur");
+                System.out.println(idJoueur + " ---- " + nomJoueur + " ---- " + numJoueur);
+                AIPlayer joueur = new AIPlayer(numJoueur, idJoueur, nomJoueur, 3);
+                Board board = new Board(19, 2);
                 boolean aMoi = false;
                 while(!bPartieFinie){
                     while(!aMoi){
@@ -54,12 +58,12 @@ public class PenteCL{
                         while ((line = bfr.readLine()) != null) {
                             builder.append(line);
                         }
+                        turn.disconnect();
                         parser = new JSONParser();
                         json = (JSONObject) parser.parse(builder.toString());
                         //Vérifie si à moi de joué
                         aMoi = (boolean) json.get("status");
                         //Recup du plateau de jeu
-                        Board board = new Board(19, 2);
                         int[][] copyOfBoard = (int[][]) json.get("tableau");
                         board.setBoard(copyOfBoard);
                         //Recup détails fin de partie
@@ -68,7 +72,17 @@ public class PenteCL{
                         //Pause pendant 0.5s
                         Thread.sleep(500);
                     }
-                    
+                    //Recup le mouvement de l'IA
+                    Move m = joueur.getMove(board);
+                    //Recup du json turn
+                    URL urlPlay = new URL(URL+"/play/"+m.col+"/"+m.row+"/"+joueur.nomJoueur);
+                    HttpURLConnection play = (HttpURLConnection) urlPlay.openConnection();
+                    play.setRequestMethod("GET");
+                    play.setRequestProperty("Accept", "application/json");
+                    if (connect.getResponseCode() != 200) {
+                        throw new RuntimeException("Failed : HTTP error code : " + connect.getResponseCode());
+                    }
+                    play.disconnect();
                 }
             }catch(Exception e){
                 
