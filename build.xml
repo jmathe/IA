@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Pente" default="test">
+    <!-- set global properties for this build -->
+    <property name="src" location="src/pente:src/pente/Players"/>
+    <property name="build" location="build"/>
+    <property name="config" location="config"/>
+    <property name="lib" location="lib"/>
+    <property name="jar" location="${lib}/pente.jar"/>
+
+    <target name="init">
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${build}/classes"/>
+        <mkdir dir="${lib}"/>
+    </target>
+
+    <target name="compile" depends="init">
+        <!-- Compile the java code from ${src} into ${build} -->
+        <javac srcdir="${src}" destdir="${build}/classes"/>
+        <jar destfile="${jar}" basedir="${build}/classes">
+            <fileset dir="${config}" includes="*.csv"/>
+        </jar>
+    </target>
+      
+    <target name="clean">
+        <!-- Delete the ${build} directory-->
+        <delete dir="${build}"/>
+    </target>
+
+    <target name="test" depends="compile">
+        <!-- Runs the jar-->
+        <java classname="pente.PenteCL" failonerror="true" fork="false">
+            <classpath>
+                <pathelement location="${jar}"/>
+                <pathelement path="${java.class.path}:${build}/classes/pente"/>
+            </classpath>
+       </java>
+    </target>
+</project>
