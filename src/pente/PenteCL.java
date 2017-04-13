@@ -12,7 +12,7 @@ import org.json.simple.parser.JSONParser;
 
 
 public class PenteCL{
-    private static final String URL = "http://127.0.0.1:8000/app_dev.php";
+    private static final String URL = "http://5.196.89.227/app_dev.php";
 	public static void main(String[] args){
             try{
                 boolean bPartieFinie = false;
@@ -36,8 +36,9 @@ public class PenteCL{
                 //Fin connexion
                 
                 //Recup données json
+                String stringBuilder = builder.toString();
                 JSONParser parser = new JSONParser();
-                JSONObject json = (JSONObject) parser.parse(builder.toString());
+                JSONObject json = (JSONObject) parser.parse(stringBuilder);
                 String idJoueur = (String) json.get("idJoueur");
                 String nomJoueur = (String) json.get("nomJoueur");
                 System.out.println("id : " + idJoueur);
@@ -97,8 +98,17 @@ public class PenteCL{
                         parser = new JSONParser();
                         json = (JSONObject) parser.parse(builder.toString());
                         
+                        Object turnObject = json.get("status");
                         //Vérifie si à moi de joué
-                        aMoi = (boolean) json.get("status");
+                        if(!(turnObject instanceof Integer)){
+                            int turnValue = (int) (long) turnObject;
+                            if (turnValue == 0) {
+                                aMoi = false;
+                            } else {
+                                aMoi = true;
+                            }
+                        }
+
                         //Recup du plateau de jeu
                         int[][] copyOfBoard = (int[][]) json.get("tableau");
                         board.setBoard(copyOfBoard);
@@ -122,7 +132,7 @@ public class PenteCL{
                     play.disconnect();
                 }
             }catch(Exception e){
-                
+                System.out.print(e);
             }
             
             
