@@ -8,11 +8,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import players.AIPlayer;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser; 
 
 
 public class PenteCL{
-    private static final String URL = "http://5.196.89.227/app_dev.php";
+    private static final String URL = "http://127.0.0.1:8000/app_dev.php";
 	public static void main(String[] args){
             try{
                 boolean bPartieFinie = false;
@@ -76,13 +77,14 @@ public class PenteCL{
                 //Fin test code reponse
                 
                 //Création joueur IA 
-                AIPlayer joueur = new AIPlayer(numJoueur, idJoueur, nomJoueur, 3);
+                AIPlayer joueur = new AIPlayer(numJoueur, idJoueur, nomJoueur, 1);
                 Board board = new Board(19, 2);
                 while(!bPartieFinie){
                     System.out.println("dans partie");
                     while(!aMoi){
+                        System.out.println("pas a moi");
                         //Turn
-                        URL urlTurn = new URL(URL+"/turn/"+idJoueur);
+                        URL urlTurn = new URL(URL+"/turn/" + idJoueur);
                         HttpURLConnection turn = (HttpURLConnection) urlTurn.openConnection();
                         turn.setRequestMethod("GET");
                         turn.setRequestProperty("Accept", "application/json");
@@ -107,10 +109,28 @@ public class PenteCL{
                             } else {
                                 aMoi = true;
                             }
+                        }else{
+                            if (turnValue == 0) {
+                                aMoi = false;
+                            } else {
+                                aMoi = true;
+                            }
                         }
 
                         //Recup du plateau de jeu
-                        int[][] copyOfBoard = (int[][]) json.get("tableau");
+                        JSONArray array = new JSONArray();
+                        array = (JSONArray) json.get("tableau");
+                        int[][] copyOfBoard = new int[19][19];
+                        //int[][] copyOfBoard = (int[][]) array.toArray();
+                        JSONArray array2 = new JSONArray();
+                        for(int i = 0; i < 19; i++){
+                            array2 = (JSONArray) array.get(i);
+                            for(int j = 0; j < 19; j++){
+                                String uneCase = array2.get(j).toString();
+                                int unChiffre = Integer.parseInt(uneCase);
+                                copyOfBoard[i][j] = unChiffre;
+                            }
+                        }
                         board.setBoard(copyOfBoard);
                         //Recup détails fin de partie
                         bPartieFinie = (boolean) json.get("finPartie");
@@ -118,18 +138,20 @@ public class PenteCL{
                         //Pause pendant 0.5s
                         Thread.sleep(500);
                     }
+                    System.out.println("je joue");
                     //Recup le mouvement de l'IA
                     Move m = joueur.getMove(board);
-                    
                     //Recup du json play
-                    URL urlPlay = new URL(URL+"/play/"+m.col+"/"+m.row+"/"+joueur.nomJoueur);
+                    URL urlPlay = new URL(URL+"/play/"+m.row+"/"+m.col+"/"+joueur.idJoueur);
                     HttpURLConnection play = (HttpURLConnection) urlPlay.openConnection();
                     play.setRequestMethod("GET");
                     play.setRequestProperty("Accept", "application/json");
-                    if (connect.getResponseCode() != 200) {
+                    if(connect.getResponseCode() != 200){
                         throw new RuntimeException("Failed : HTTP error code : " + connect.getResponseCode());
                     }
                     play.disconnect();
+                    aMoi = false;
+                    System.out.println("j'ai fini de jouer");
                 }
             }catch(Exception e){
                 System.out.print(e);
