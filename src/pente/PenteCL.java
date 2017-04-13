@@ -22,7 +22,7 @@ public class PenteCL{
                 int numJoueur = 0;
                 
                 //Connexion
-                URL urlConnect = new URL(URL+"/connect/Pastaoili");
+                URL urlConnect = new URL(URL+"/connect/Pastaioli");
                 HttpURLConnection connect = (HttpURLConnection) urlConnect.openConnection();
                 connect.setRequestMethod("GET");
                 connect.setRequestProperty("Accept", "application/json");
@@ -77,7 +77,7 @@ public class PenteCL{
                 //Fin test code reponse
                 
                 //Création joueur IA 
-                AIPlayer joueur = new AIPlayer(numJoueur, idJoueur, nomJoueur, 1);
+                AIPlayer joueur = new AIPlayer(numJoueur, idJoueur, nomJoueur, 3);
                 Board board = new Board(19, 2);
                 while(!bPartieFinie){
                     System.out.println("dans partie");
@@ -110,7 +110,7 @@ public class PenteCL{
                                 aMoi = true;
                             }
                         }else{
-                            if (turnValue == 0) {
+                            if ((int) turnObject == 0) {
                                 aMoi = false;
                             } else {
                                 aMoi = true;
@@ -139,6 +139,7 @@ public class PenteCL{
                         Thread.sleep(500);
                     }
                     System.out.println("je joue");
+                    System.out.println(board.getBoard().toString());    
                     //Recup le mouvement de l'IA
                     Move m = joueur.getMove(board);
                     //Recup du json play
@@ -146,6 +147,7 @@ public class PenteCL{
                     HttpURLConnection play = (HttpURLConnection) urlPlay.openConnection();
                     play.setRequestMethod("GET");
                     play.setRequestProperty("Accept", "application/json");
+                    is = play.getInputStream();
                     if(connect.getResponseCode() != 200){
                         throw new RuntimeException("Failed : HTTP error code : " + connect.getResponseCode());
                     }

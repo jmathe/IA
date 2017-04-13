@@ -33,8 +33,8 @@ public class Board{
     // Number of captures needed to win game
     private static final int WINNING_CAPTURES = 5;
     // Load hash table values
-    private static final long[][] BOARD_KEYS = Board.loadMatrixFromFile("C:\\Users\\leo\\Documents\\BoardHashVals.csv");
-    private static final long[][] CAPTURE_KEYS = Board.loadMatrixFromFile("C:\\Users\\leo\\Documents\\CaptureHashVals.csv");
+    private static final long[][] BOARD_KEYS = Board.loadMatrixFromFile("/Users/julien_mathe/Documents/BoardHashVals.csv");
+    private static final long[][] CAPTURE_KEYS = Board.loadMatrixFromFile("/Users/julien_mathe/Documents/CaptureHashVals.csv");
 
     public Board(int dimension, int numPlayers){
         this.size = dimension;
